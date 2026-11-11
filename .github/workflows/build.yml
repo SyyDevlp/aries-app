@@ -37,24 +37,29 @@ jobs:
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.arise.app",
-            "appName": "ARISE",
+            "appName": "Aries",
             "webDir": "www"
           }
           EOF
           npm install
+          grep -rl "USAGE_NOTIFICATION" node_modules/@capacitor/local-notifications/android/src | xargs -r sed -i 's/USAGE_NOTIFICATION/USAGE_ALARM/g'
           npx cap add android
           mkdir -p android/app/src/main/res/raw
           cp alarm.wav android/app/src/main/res/raw/alarm.wav
           sed -i 's#</manifest>#<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/><uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/><uses-permission android:name="android.permission.USE_EXACT_ALARM"/><uses-permission android:name="android.permission.VIBRATE"/><uses-permission android:name="android.permission.WAKE_LOCK"/></manifest>#' android/app/src/main/AndroidManifest.xml
           npx cap sync android
+          mkdir -p ~/.android
+          cp debug.keystore ~/.android/debug.keystore
       - name: Bangun APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
+      - name: Ubah nama APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk Aries.apk
       - name: Rilis APK
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          name: ARISE build ${{ github.run_number }}
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Aries build ${{ github.run_number }}
+          files: Aries.apk
